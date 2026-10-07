@@ -8,9 +8,12 @@
   <title>Compra tu pin de internet · GuajiraNet</title>
   <link rel="icon" href="/img/espiral-guajiranet.png">
   <link rel="apple-touch-icon" href="/img/logo-guajiranet.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
 </head>
-<body>
+<body class="pagina-planes">
   <div id="splash" class="splash" aria-hidden="true">
     <img class="splash-espiral" src="/img/espiral-guajiranet.png" alt="">
   </div>
@@ -19,14 +22,12 @@
     <header class="marca">
       <img class="logo-marca" src="/img/logo-guajiranet.png" alt="GuajiraNet Telecomunicaciones">
       <h1>Compra tu pin de internet</h1>
-      <p>Elige tu plan, paga y navega en segundos.</p>
+      <p>Elige tu plan y paga, recibes tu pin al instante.</p>
     </header>
 
     <main>
       <section class="selector-planes">
-        <div class="carrusel-planes" id="carrusel"></div>
-        <div class="puntos-carrusel" id="puntos"></div>
-        <p class="pista-deslizar">Desliza para ver los planes</p>
+        <div class="grid-planes" id="gridPlanes"></div>
       </section>
 
       <section class="como-funciona">
@@ -51,17 +52,7 @@
     <p class="pie">GuajiraNet Telecomunicaciones</p>
   </div>
 
-  <div class="barra-cta" id="barraCta">
-    <div class="barra-cta-interior">
-      <div class="resumen">
-        <div class="etiqueta" id="resumenEtiqueta">Selecciona un plan</div>
-        <div class="monto" id="resumenMonto">—</div>
-      </div>
-      <button class="boton-primario" id="botonComprar" disabled>
-        <span id="botonComprarTexto">Comprar ahora</span>
-      </button>
-    </div>
-  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script src="/js/favicon.js"></script>
   <script src="/js/index.js"></script>

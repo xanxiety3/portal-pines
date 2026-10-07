@@ -42,7 +42,7 @@ html {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Sora', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background:
     radial-gradient(900px 500px at 50% -120px, rgba(16, 168, 40, 0.12), transparent 60%),
     var(--bg);
@@ -57,12 +57,23 @@ button {
 }
 
 .contenedor {
-  max-width: 480px;
+  max-width: 560px;
   margin: 0 auto;
-  padding: 20px 16px calc(24px + env(safe-area-inset-bottom));
+  padding: 20px 16px calc(28px + env(safe-area-inset-bottom));
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+/* La pantalla de estado (QR / pin) es más corta que la de planes, así que
+   centramos el bloque completo en vez de dejarlo pegado arriba con un
+   hueco vacío abajo. */
+.pagina-estado .contenedor {
+  justify-content: center;
+}
+
+.pagina-estado .pie {
+  margin-top: 28px;
 }
 
 /* ---------- Encabezado / marca ---------- */
@@ -84,7 +95,7 @@ button {
 }
 
 .marca .logo-marca {
-  width: 168px;
+  width: 196px;
   height: auto;
 }
 
@@ -176,6 +187,7 @@ button {
 /* ---------- Spinner ---------- */
 
 .girador {
+  display: inline-block;
   width: 22px;
   height: 22px;
   border: 3px solid rgba(255, 255, 255, 0.4);
@@ -241,114 +253,111 @@ button {
   pointer-events: none;
 }
 
-/* ---------- Carrusel de planes ---------- */
+/* ---------- Grilla de planes ---------- */
 
 .selector-planes {
   margin-top: 22px;
 }
 
-.carrusel-planes {
-  display: flex;
+.grid-planes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  justify-items: stretch;
   gap: 14px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  padding: 10px calc(50% - 118px) 18px;
-  margin: 0 -16px;
 }
 
-.carrusel-planes::-webkit-scrollbar { display: none; }
+/* Si el número de planes es impar, el último queda solo en su fila:
+   en vez de dejarlo angosto con un hueco vacío al lado, lo extendemos
+   para que ocupe todo el ancho de la fila. */
+.tarjeta-plan:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+  max-width: none;
+}
+
+.tarjeta-plan:last-child:nth-child(odd) .duracion-grande {
+  margin-top: 10px;
+}
 
 .tarjeta-plan {
-  scroll-snap-align: center;
-  flex: 0 0 236px;
   position: relative;
   overflow: hidden;
   background: var(--tarjeta);
-  border-radius: 22px;
-  padding: 24px 20px 20px;
+  border-radius: 20px;
+  padding: 16px 14px 20px;
   text-align: center;
   box-shadow: var(--sombra);
+  animation: aparecer var(--dur-media) var(--easing) both;
+  width: 100%;
+  max-width: 200px;
   cursor: pointer;
-  transform: scale(0.9);
-  opacity: 0.55;
-  transition: transform 260ms var(--easing), opacity 260ms var(--easing), box-shadow 260ms var(--easing);
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--dur-rapida) var(--easing), box-shadow var(--dur-rapida) var(--easing);
 }
 
-.tarjeta-plan.activa {
-  transform: scale(1);
-  opacity: 1;
-  box-shadow: var(--sombra-elevada);
+.tarjeta-plan:active {
+  transform: scale(0.97);
+}
+
+.tarjeta-plan:focus-visible {
+  outline: 2px solid var(--primario);
+  outline-offset: 2px;
 }
 
 .tarjeta-plan .marca-agua {
   position: absolute;
   right: -22px;
   bottom: -22px;
-  width: 130px;
-  opacity: 0.06;
+  width: 120px;
+  opacity: 0.1;
   pointer-events: none;
 }
 
-.tarjeta-plan .cinta {
-  display: inline-block;
-  padding: 5px 13px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.2px;
+.boton-comprar-tarjeta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  background: linear-gradient(135deg, var(--verde-lima), var(--primario-oscuro));
   color: #fff;
-  background: linear-gradient(135deg, var(--verde-lima), var(--verde));
-  margin-bottom: 14px;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 10px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 40px;
+  box-shadow: 0 6px 14px rgba(16, 168, 40, 0.25);
+  transition: transform var(--dur-rapida) var(--easing), opacity var(--dur-rapida);
+}
+
+.boton-comprar-tarjeta:active { transform: scale(0.96); }
+
+.boton-comprar-tarjeta:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .tarjeta-plan .duracion-grande {
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 800;
   color: var(--texto);
+  margin-top: 14px;
 }
 
 .tarjeta-plan .precio-grande {
-  font-size: 34px;
+  font-size: 28px;
   font-weight: 900;
-  margin: 8px 0 4px;
+  margin: 4px 0 0;
   background: linear-gradient(135deg, var(--verde-lima), var(--primario-oscuro));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
-.tarjeta-plan .detalle {
-  font-size: 12.5px;
-  color: var(--texto-suave);
-}
-
-.puntos-carrusel {
-  display: flex;
-  justify-content: center;
-  gap: 6px;
-  margin-top: 6px;
-}
-
-.punto-plan {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--borde);
-  transition: all var(--dur-media) var(--easing);
-}
-
-.punto-plan.activo {
-  width: 20px;
-  background: var(--primario);
-}
-
-.pista-deslizar {
-  text-align: center;
-  font-size: 11.5px;
-  color: var(--texto-suave);
-  margin: 2px 0 0;
+@media (hover: hover) {
+  .tarjeta-plan:hover {
+    box-shadow: var(--sombra-elevada);
+  }
 }
 
 /* ---------- Cómo funciona ---------- */
@@ -403,57 +412,31 @@ button {
   line-height: 1.35;
 }
 
-/* ---------- Barra inferior fija (CTA) ---------- */
+/* ---------- Toast ---------- */
 
-.barra-cta {
+.toast {
   position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--tarjeta);
-  border-top: 1px solid var(--borde);
-  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
-  transform: translateY(100%);
-  transition: transform var(--dur-media) var(--easing);
-  z-index: 20;
-}
-
-.barra-cta.visible { transform: translateY(0); }
-
-.barra-cta-interior {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.barra-cta .resumen { flex: 1; min-width: 0; }
-.barra-cta .resumen .etiqueta { font-size: 11.5px; color: var(--texto-suave); }
-.barra-cta .resumen .monto { font-size: 19px; font-weight: 800; }
-
-.boton-primario {
-  background: linear-gradient(135deg, var(--verde-lima), var(--primario-oscuro));
+  left: 50%;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  transform: translate(-50%, 16px);
+  background: var(--texto);
   color: #fff;
-  border: none;
-  border-radius: 14px;
-  padding: 14px 22px;
-  font-size: 15.5px;
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  cursor: pointer;
-  min-height: 50px;
-  box-shadow: 0 8px 18px rgba(16, 168, 40, 0.28);
-  transition: transform var(--dur-rapida) var(--easing), box-shadow var(--dur-rapida) var(--easing), opacity var(--dur-rapida);
+  padding: 12px 20px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-align: center;
+  max-width: calc(100% - 32px);
+  opacity: 0;
+  pointer-events: none;
+  box-shadow: var(--sombra-elevada);
+  transition: opacity 250ms var(--easing), transform 250ms var(--easing);
+  z-index: 30;
 }
 
-.boton-primario:active { transform: scale(0.97); }
-
-.boton-primario:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-  transform: none;
+.toast.visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
 }
 
 /* ---------- Página de estado / pin ---------- */
@@ -522,13 +505,49 @@ button {
   border-radius: 8px;
 }
 
-.llave-pago {
-  font-size: 13px;
+.bloque-llave {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.etiqueta-llave {
+  font-size: 12.5px;
   color: var(--texto-suave);
+}
+
+.llave-pago {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  color: var(--texto);
   background: #f4f6fb;
+  border: none;
   border-radius: 999px;
-  padding: 6px 14px;
-  font-weight: 600;
+  padding: 7px 16px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  font-family: inherit;
+  cursor: pointer;
+  max-width: 100%;
+  transition: background var(--dur-rapida) var(--easing), transform var(--dur-rapida) var(--easing), color var(--dur-rapida) var(--easing);
+}
+
+.llave-pago .texto-llave {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.llave-pago svg { flex-shrink: 0; }
+
+.llave-pago:active { transform: scale(0.97); }
+
+.llave-pago.copiado {
+  background: var(--primario);
+  color: #fff;
 }
 
 .cuenta-regresiva {
@@ -701,42 +720,46 @@ button {
     padding-bottom: 110px;
   }
 
-  .marca .logo-marca { width: 220px; }
+  /* En escritorio el contenido suele ser más corto que la pantalla:
+     centramos el bloque completo en vez de dejarlo pegado arriba con
+     un hueco vacío abajo. */
+  .pagina-planes .contenedor {
+    justify-content: center;
+  }
+
+  .pagina-planes .pie {
+    margin-top: 40px;
+  }
+
+  .marca .logo-marca { width: 250px; }
   .marca h1 { font-size: 27px; }
   .marca p { font-size: 16px; }
 
   .selector-planes { margin-top: 36px; }
 
-  .carrusel-planes {
-    overflow: visible;
-    scroll-snap-type: none;
-    flex-wrap: wrap;
-    justify-content: center;
-    padding: 10px 0 8px;
-    margin: 0;
+  .grid-planes {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    justify-items: center;
+    gap: 18px;
+  }
+
+  /* En escritorio las 5 tarjetas caben en una sola fila: no queda ninguna
+     huérfana, así que deshacemos el ensanchado que aplica en móvil. */
+  .tarjeta-plan:last-child:nth-child(odd) {
+    grid-column: auto;
+    max-width: 200px;
+  }
+
+  .tarjeta-plan:last-child:nth-child(odd) .duracion-grande {
+    margin-top: 14px;
   }
 
   .tarjeta-plan {
-    flex: 0 1 220px;
-    opacity: 1;
-    transform: none;
-    cursor: pointer;
-    transition: transform 200ms var(--easing), box-shadow 200ms var(--easing), border-color 200ms var(--easing);
-    border: 2px solid transparent;
+    padding: 20px 16px 24px;
+    transition: box-shadow 200ms var(--easing), transform 200ms var(--easing);
   }
 
-  .tarjeta-plan:hover { transform: translateY(-5px); box-shadow: var(--sombra-elevada); }
-
-  .tarjeta-plan.activa {
-    border-color: var(--primario);
-    box-shadow: var(--sombra-elevada);
-    transform: translateY(-5px);
-  }
-
-  .puntos-carrusel,
-  .pista-deslizar {
-    display: none;
-  }
+  .tarjeta-plan:hover { transform: translateY(-4px); box-shadow: var(--sombra-elevada); }
 
   .como-funciona {
     max-width: 760px;
@@ -746,11 +769,6 @@ button {
 
   .pasos-funciona { gap: 22px; }
   .paso-funciona { max-width: 220px; padding: 22px 16px; }
-
-  .barra-cta-interior {
-    max-width: 480px;
-    margin: 0 auto;
-  }
 
   .tarjeta-estado { max-width: 420px; margin-left: auto; margin-right: auto; }
 }

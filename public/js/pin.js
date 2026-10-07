@@ -60,6 +60,10 @@ function renderCargando(texto) {
   `;
 }
 
+function iconoCopiar() {
+  return '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>';
+}
+
 function renderPendientePago(d) {
   tarjeta.innerHTML = `
     <p class="mensaje">Escanea el QR con la app de tu banco para pagar.</p>
@@ -67,12 +71,34 @@ function renderPendientePago(d) {
       <div class="marco-qr">
         <img src="${d.qr}" alt="Código QR de pago">
       </div>
-      ${d.llave ? `<span class="llave-pago">O paga a la llave Bre-B: ${d.llave}</span>` : ''}
+      ${d.llave ? `
+        <div class="bloque-llave">
+          <span class="etiqueta-llave">O paga a la llave Bre-B</span>
+          <button class="llave-pago" id="botonLlave" type="button">
+            <span class="texto-llave">${d.llave}</span>
+            ${iconoCopiar()}
+          </button>
+        </div>
+      ` : ''}
       ${d.vence ? `<span class="cuenta-regresiva" id="cuentaRegresiva"></span>` : ''}
     </div>
     <p class="mensaje" style="font-size:12.5px;margin-top:6px;">Esta página se actualiza sola, no es necesario recargar.</p>
   `;
   if (d.vence) iniciarCuentaRegresiva(d.vence, document.getElementById('cuentaRegresiva'));
+
+  const botonLlave = document.getElementById('botonLlave');
+  if (botonLlave) {
+    botonLlave.addEventListener('click', () => {
+      navigator.clipboard.writeText(d.llave).catch(() => {});
+      botonLlave.classList.add('copiado');
+      botonLlave.querySelector('.texto-llave').textContent = '¡Copiada!';
+      try { navigator.vibrate && navigator.vibrate(10); } catch (e) {}
+      setTimeout(() => {
+        botonLlave.classList.remove('copiado');
+        botonLlave.querySelector('.texto-llave').textContent = d.llave;
+      }, 1800);
+    });
+  }
 }
 
 function renderExito(pin) {
