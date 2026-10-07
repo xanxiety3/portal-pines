@@ -1,4 +1,6 @@
 :root {
+  color-scheme: light;
+
   --negro: #202020;
   --amarillo: #f8d020;
   --azul: #0808e8;
@@ -13,8 +15,8 @@
   --texto-suave: #6b7280;
   --borde: #e6e9f2;
 
-  --primario: var(--celeste);
-  --primario-oscuro: var(--azul);
+  --primario: var(--verde);
+  --primario-oscuro: #0b7e20;
 
   --radio: 18px;
   --radio-sm: 12px;
@@ -34,10 +36,15 @@ html, body {
   padding: 0;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background:
-    radial-gradient(900px 500px at 50% -120px, rgba(8, 104, 192, 0.12), transparent 60%),
+    radial-gradient(900px 500px at 50% -120px, rgba(16, 168, 40, 0.12), transparent 60%),
     var(--bg);
   color: var(--texto);
   min-height: 100vh;
@@ -76,6 +83,11 @@ button {
   transform-origin: 50% 50%;
 }
 
+.marca .logo-marca {
+  width: 168px;
+  height: auto;
+}
+
 @keyframes espiralGirar {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
@@ -92,7 +104,7 @@ button {
 
 .marca .nombre-marca em {
   font-style: normal;
-  color: var(--celeste);
+  color: var(--primario);
 }
 
 .marca h1 {
@@ -144,8 +156,8 @@ button {
 }
 
 @keyframes pulso {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(8, 104, 192, 0.35); }
-  50% { box-shadow: 0 0 0 10px rgba(8, 104, 192, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 168, 40, 0.35); }
+  50% { box-shadow: 0 0 0 10px rgba(16, 168, 40, 0); }
 }
 
 @keyframes girar {
@@ -174,109 +186,221 @@ button {
 }
 
 .girador.oscuro {
-  border: 3px solid rgba(8, 104, 192, 0.18);
+  border: 3px solid rgba(16, 168, 40, 0.18);
   border-top-color: var(--primario);
 }
 
-/* ---------- Tarjetas de plan ---------- */
+/* ---------- Splash de apertura ---------- */
 
-.planes {
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(55% 45% at 18% 20%, rgba(248, 208, 32, 0.65), transparent 60%),
+    radial-gradient(50% 42% at 88% 12%, rgba(16, 168, 40, 0.55), transparent 60%),
+    radial-gradient(55% 50% at 12% 88%, rgba(240, 8, 0, 0.45), transparent 60%),
+    radial-gradient(65% 55% at 90% 90%, rgba(8, 8, 232, 0.6), transparent 60%),
+    linear-gradient(135deg, var(--celeste), var(--azul));
+  background-size: 180% 180%;
+  animation: splashFondo 5s ease-in-out infinite;
+  clip-path: circle(150% at 50% 50%);
+  transition: clip-path 700ms var(--easing);
+}
+
+@keyframes splashFondo {
+  0%, 100% { background-position: 0% 0%, 100% 0%, 0% 100%, 100% 100%, 0% 0%; }
+  50% { background-position: 12% 12%, 88% 8%, 8% 92%, 92% 88%, 100% 100%; }
+}
+
+.splash-espiral {
+  width: 112px;
+  filter: drop-shadow(0 10px 26px rgba(0, 0, 0, 0.28)) brightness(0) invert(1);
+  animation: espiralGirar 1.8s linear infinite, splashEntra 450ms var(--easing) both;
+}
+
+@keyframes splashEntra {
+  from { opacity: 0; transform: scale(0.7); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.splash.abriendo .splash-espiral {
+  animation: espiralGiroFinal 700ms cubic-bezier(0.5, 0, 0.3, 1) forwards;
+}
+
+@keyframes espiralGiroFinal {
+  from { transform: rotate(0deg) scale(1); }
+  to { transform: rotate(720deg) scale(0.35); opacity: 0; }
+}
+
+.splash.saliendo {
+  clip-path: circle(0% at 50% 50%);
+  pointer-events: none;
+}
+
+/* ---------- Carrusel de planes ---------- */
+
+.selector-planes {
   margin-top: 22px;
 }
 
-.plan {
-  position: relative;
+.carrusel-planes {
   display: flex;
-  align-items: center;
   gap: 14px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding: 10px calc(50% - 118px) 18px;
+  margin: 0 -16px;
+}
+
+.carrusel-planes::-webkit-scrollbar { display: none; }
+
+.tarjeta-plan {
+  scroll-snap-align: center;
+  flex: 0 0 236px;
+  position: relative;
+  overflow: hidden;
   background: var(--tarjeta);
-  border: 1.5px solid var(--borde);
-  border-radius: var(--radio);
-  padding: 14px 16px;
-  text-align: left;
-  cursor: pointer;
+  border-radius: 22px;
+  padding: 24px 20px 20px;
+  text-align: center;
   box-shadow: var(--sombra);
-  transition: border-color var(--dur-rapida) var(--easing),
-              transform var(--dur-rapida) var(--easing),
-              box-shadow var(--dur-rapida) var(--easing);
+  cursor: pointer;
+  transform: scale(0.9);
+  opacity: 0.55;
+  transition: transform 260ms var(--easing), opacity 260ms var(--easing), box-shadow 260ms var(--easing);
+}
+
+.tarjeta-plan.activa {
+  transform: scale(1);
+  opacity: 1;
+  box-shadow: var(--sombra-elevada);
+}
+
+.tarjeta-plan .marca-agua {
+  position: absolute;
+  right: -22px;
+  bottom: -22px;
+  width: 130px;
+  opacity: 0.06;
+  pointer-events: none;
+}
+
+.tarjeta-plan .cinta {
+  display: inline-block;
+  padding: 5px 13px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--verde-lima), var(--verde));
+  margin-bottom: 14px;
+}
+
+.tarjeta-plan .duracion-grande {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--texto);
+}
+
+.tarjeta-plan .precio-grande {
+  font-size: 34px;
+  font-weight: 900;
+  margin: 8px 0 4px;
+  background: linear-gradient(135deg, var(--verde-lima), var(--primario-oscuro));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.tarjeta-plan .detalle {
+  font-size: 12.5px;
+  color: var(--texto-suave);
+}
+
+.puntos-carrusel {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.punto-plan {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--borde);
+  transition: all var(--dur-media) var(--easing);
+}
+
+.punto-plan.activo {
+  width: 20px;
+  background: var(--primario);
+}
+
+.pista-deslizar {
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--texto-suave);
+  margin: 2px 0 0;
+}
+
+/* ---------- Cómo funciona ---------- */
+
+.como-funciona {
+  margin-top: 32px;
   animation: aparecer var(--dur-media) var(--easing) both;
 }
 
-.plan:active { transform: scale(0.98); }
-
-.plan .marca-color {
-  width: 44px;
-  height: 44px;
-  border-radius: 13px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  color: #fff;
-}
-
-.plan .marca-color svg { width: 22px; height: 22px; }
-
-.plan .info { flex: 1; min-width: 0; }
-
-.plan .duracion {
+.como-funciona h2 {
+  font-size: 14px;
   font-weight: 700;
-  font-size: 16px;
   color: var(--texto);
+  text-align: center;
+  margin: 0 0 16px;
 }
 
-.plan .velocidad {
-  font-size: 12.5px;
-  color: var(--texto-suave);
-  margin-top: 1px;
+.pasos-funciona {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
 }
 
-.plan .precio {
-  font-weight: 800;
-  font-size: 17px;
-  color: var(--texto);
-  white-space: nowrap;
+.paso-funciona {
+  flex: 1;
+  max-width: 140px;
+  background: var(--tarjeta);
+  border-radius: 16px;
+  padding: 16px 10px;
+  text-align: center;
+  box-shadow: var(--sombra);
 }
 
-.plan .marca-seleccion {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 20px;
-  height: 20px;
+.paso-funciona .num {
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  border: 2px solid var(--borde);
-  background: #fff;
+  background: linear-gradient(135deg, var(--verde-lima), var(--primario-oscuro));
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--dur-rapida) var(--easing);
+  margin: 0 auto 8px;
 }
 
-.plan .marca-seleccion svg {
-  width: 11px;
-  height: 11px;
-  opacity: 0;
-  transform: scale(0.5);
-  transition: all var(--dur-rapida) var(--easing);
-}
-
-.plan.seleccionado {
-  border-color: var(--primario);
-  box-shadow: 0 0 0 3px rgba(8, 104, 192, 0.12), var(--sombra);
-}
-
-.plan.seleccionado .marca-seleccion {
-  background: var(--primario);
-  border-color: var(--primario);
-}
-
-.plan.seleccionado .marca-seleccion svg {
-  opacity: 1;
-  transform: scale(1);
+.paso-funciona p {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--texto-suave);
+  line-height: 1.35;
 }
 
 /* ---------- Barra inferior fija (CTA) ---------- */
@@ -289,9 +413,6 @@ button {
   background: var(--tarjeta);
   border-top: 1px solid var(--borde);
   padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
-  display: flex;
-  align-items: center;
-  gap: 12px;
   transform: translateY(100%);
   transition: transform var(--dur-media) var(--easing);
   z-index: 20;
@@ -299,12 +420,18 @@ button {
 
 .barra-cta.visible { transform: translateY(0); }
 
+.barra-cta-interior {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .barra-cta .resumen { flex: 1; min-width: 0; }
 .barra-cta .resumen .etiqueta { font-size: 11.5px; color: var(--texto-suave); }
 .barra-cta .resumen .monto { font-size: 19px; font-weight: 800; }
 
 .boton-primario {
-  background: linear-gradient(135deg, var(--celeste), var(--azul));
+  background: linear-gradient(135deg, var(--verde-lima), var(--primario-oscuro));
   color: #fff;
   border: none;
   border-radius: 14px;
@@ -317,7 +444,7 @@ button {
   gap: 8px;
   cursor: pointer;
   min-height: 50px;
-  box-shadow: 0 8px 18px rgba(8, 104, 192, 0.28);
+  box-shadow: 0 8px 18px rgba(16, 168, 40, 0.28);
   transition: transform var(--dur-rapida) var(--easing), box-shadow var(--dur-rapida) var(--easing), opacity var(--dur-rapida);
 }
 
@@ -559,4 +686,71 @@ button {
   font-weight: 700;
   font-size: 14px;
   text-decoration: none;
+}
+
+/* ====================================================================
+   Versión de escritorio — todo lo anterior es el diseño móvil base y
+   queda intacto; estas reglas solo se activan desde 860px de ancho.
+   ==================================================================== */
+
+@media (min-width: 860px) {
+  .contenedor {
+    max-width: 960px;
+    padding-left: 32px;
+    padding-right: 32px;
+    padding-bottom: 110px;
+  }
+
+  .marca .logo-marca { width: 220px; }
+  .marca h1 { font-size: 27px; }
+  .marca p { font-size: 16px; }
+
+  .selector-planes { margin-top: 36px; }
+
+  .carrusel-planes {
+    overflow: visible;
+    scroll-snap-type: none;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 10px 0 8px;
+    margin: 0;
+  }
+
+  .tarjeta-plan {
+    flex: 0 1 220px;
+    opacity: 1;
+    transform: none;
+    cursor: pointer;
+    transition: transform 200ms var(--easing), box-shadow 200ms var(--easing), border-color 200ms var(--easing);
+    border: 2px solid transparent;
+  }
+
+  .tarjeta-plan:hover { transform: translateY(-5px); box-shadow: var(--sombra-elevada); }
+
+  .tarjeta-plan.activa {
+    border-color: var(--primario);
+    box-shadow: var(--sombra-elevada);
+    transform: translateY(-5px);
+  }
+
+  .puntos-carrusel,
+  .pista-deslizar {
+    display: none;
+  }
+
+  .como-funciona {
+    max-width: 760px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .pasos-funciona { gap: 22px; }
+  .paso-funciona { max-width: 220px; padding: 22px 16px; }
+
+  .barra-cta-interior {
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .tarjeta-estado { max-width: 420px; margin-left: auto; margin-right: auto; }
 }

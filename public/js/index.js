@@ -1,70 +1,126 @@
 const PLANES = [
-  { id: '1d',  duracion: '1 día',   precio: 1200,  color: 'var(--amarillo)',    icono: 'rayo' },
-  { id: '3d',  duracion: '3 días',  precio: 3000,  color: 'var(--verde-lima)',  icono: 'wifi' },
-  { id: '6d',  duracion: '6 días',  precio: 5000,  color: 'var(--celeste)',     icono: 'wifi' },
-  { id: '15d', duracion: '15 días', precio: 15000, color: 'var(--azul)',        icono: 'calendario' },
-  { id: '30d', duracion: '30 días', precio: 25000, color: 'var(--rojo)',        icono: 'estrella' }
+  { id: '1d',  duracion: '1 día',   precio: 1200,  cinta: 'Prueba rápida' },
+  { id: '3d',  duracion: '3 días',  precio: 3000,  cinta: 'Para el fin de semana' },
+  { id: '6d',  duracion: '6 días',  precio: 5000,  cinta: 'Semana completa' },
+  { id: '15d', duracion: '15 días', precio: 15000, cinta: 'Quincena' },
+  { id: '30d', duracion: '30 días', precio: 25000, cinta: 'El más conveniente' }
 ];
-
-const ICONOS = {
-  rayo: '<path d="M13 2 4 14h6l-1 8 9-12h-6z" fill="currentColor"/>',
-  wifi: '<path d="M5 12.5a11 11 0 0 1 14 0" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M8.5 16a6 6 0 0 1 7 0" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round"/><circle cx="12" cy="19" r="1.3" fill="currentColor"/>',
-  calendario: '<rect x="4" y="5.5" width="16" height="15" rx="2.5" stroke="currentColor" stroke-width="2.1" fill="none"/><path d="M4 10h16M8 3.5v4M16 3.5v4" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/>',
-  estrella: '<path d="M12 3.5l2.6 5.5 6 .7-4.4 4.1 1.2 6-5.4-3-5.4 3 1.2-6-4.4-4.1 6-.7z" fill="currentColor"/>'
-};
 
 const formateador = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
 
-const contenedorPlanes = document.getElementById('planes');
+/* ---------- Splash de apertura ---------- */
+
+(function iniciarSplash() {
+  const splash = document.getElementById('splash');
+  const reducido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const espera = reducido ? 150 : 1200;
+
+  setTimeout(() => {
+    splash.classList.add('abriendo');
+    setTimeout(() => { splash.classList.add('saliendo'); }, reducido ? 0 : 280);
+    setTimeout(() => { splash.style.display = 'none'; }, reducido ? 0 : 980);
+  }, espera);
+})();
+
+/* ---------- Carrusel de planes ---------- */
+
+const carrusel = document.getElementById('carrusel');
+const puntosCont = document.getElementById('puntos');
 const barraCta = document.getElementById('barraCta');
 const resumenEtiqueta = document.getElementById('resumenEtiqueta');
 const resumenMonto = document.getElementById('resumenMonto');
 const botonComprar = document.getElementById('botonComprar');
 const botonComprarTexto = document.getElementById('botonComprarTexto');
 
-let planSeleccionado = null;
+let indiceActivo = 0;
 
-function renderizarPlanes() {
-  contenedorPlanes.innerHTML = PLANES.map((plan, i) => `
-    <button type="button" class="plan" data-plan="${plan.id}" role="radio" aria-checked="false"
-      style="animation-delay:${i * 60}ms">
-      <span class="marca-color" style="background:${plan.color}">
-        <svg viewBox="0 0 24 24">${ICONOS[plan.icono]}</svg>
-      </span>
-      <span class="info">
-        <span class="duracion">${plan.duracion}</span>
-        <span class="velocidad">20 Mbps · acceso completo</span>
-      </span>
-      <span class="precio">${formateador.format(plan.precio)}</span>
-      <span class="marca-seleccion">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>
-      </span>
-    </button>
+function renderizarCarrusel() {
+  carrusel.innerHTML = PLANES.map((plan) => `
+    <article class="tarjeta-plan" data-plan="${plan.id}">
+      <img class="marca-agua" src="/img/espiral-guajiranet.png" alt="">
+      <span class="cinta">${plan.cinta}</span>
+      <div class="duracion-grande">${plan.duracion}</div>
+      <div class="precio-grande">${formateador.format(plan.precio)}</div>
+      <div class="detalle">20 Mbps · acceso completo</div>
+    </article>
   `).join('');
 
-  contenedorPlanes.querySelectorAll('.plan').forEach(boton => {
-    boton.addEventListener('click', () => seleccionarPlan(boton.dataset.plan));
+  puntosCont.innerHTML = PLANES.map(() => '<span class="punto-plan"></span>').join('');
+
+  carrusel.querySelectorAll('.tarjeta-plan').forEach((tarjeta, i) => {
+    tarjeta.addEventListener('click', () => {
+      irATarjeta(i);
+      seleccionarIndice(i);
+    });
   });
 }
 
-function seleccionarPlan(id) {
-  planSeleccionado = PLANES.find(p => p.id === id);
-  contenedorPlanes.querySelectorAll('.plan').forEach(b => {
-    const activo = b.dataset.plan === id;
-    b.classList.toggle('seleccionado', activo);
-    b.setAttribute('aria-checked', String(activo));
-  });
+function irATarjeta(i) {
+  const tarjetas = carrusel.querySelectorAll('.tarjeta-plan');
+  if (!tarjetas[i]) return;
+  tarjetas[i].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+}
 
-  resumenEtiqueta.textContent = planSeleccionado.duracion;
-  resumenMonto.textContent = formateador.format(planSeleccionado.precio);
+// Aplica el estado visual (tarjeta activa, puntos, barra inferior) para el índice dado.
+// Se usa tanto al hacer clic directo (escritorio) como al detectar la tarjeta centrada
+// por scroll (carrusel táctil en móvil).
+function seleccionarIndice(i) {
+  const tarjetas = [...carrusel.querySelectorAll('.tarjeta-plan')];
+  if (!tarjetas[i]) return;
+
+  tarjetas.forEach((t, idx) => t.classList.toggle('activa', idx === i));
+  puntosCont.querySelectorAll('.punto-plan').forEach((p, idx) => p.classList.toggle('activo', idx === i));
+
+  const cambio = i !== indiceActivo || resumenMonto.textContent === '—';
+  indiceActivo = i;
+  const plan = PLANES[i];
+  resumenEtiqueta.textContent = plan.duracion;
+  resumenMonto.textContent = formateador.format(plan.precio);
   botonComprar.disabled = false;
   barraCta.classList.add('visible');
 
-  try { navigator.vibrate && navigator.vibrate(8); } catch (e) {}
+  if (cambio) {
+    try { navigator.vibrate && navigator.vibrate(6); } catch (e) {}
+  }
 }
 
+// Detecta qué tarjeta está centrada dentro del carrusel deslizable (móvil).
+// En escritorio el carrusel no se desplaza (todas las tarjetas son visibles),
+// así que esto no se dispara ahí: la selección la maneja el clic directo.
+function actualizarActiva() {
+  // En escritorio el carrusel no se desplaza (todas las tarjetas caben o envuelven
+  // en varias filas): no hay nada que "detectar", así que no se toca la selección.
+  if (carrusel.scrollWidth <= carrusel.clientWidth + 1) return;
+
+  const tarjetas = [...carrusel.querySelectorAll('.tarjeta-plan')];
+  if (!tarjetas.length) return;
+
+  const centroContenedor = carrusel.getBoundingClientRect().left + carrusel.clientWidth / 2;
+  let mejorIndice = 0;
+  let mejorDistancia = Infinity;
+
+  tarjetas.forEach((tarjeta, i) => {
+    const rect = tarjeta.getBoundingClientRect();
+    const centroTarjeta = rect.left + rect.width / 2;
+    const distancia = Math.abs(centroTarjeta - centroContenedor);
+    if (distancia < mejorDistancia) {
+      mejorDistancia = distancia;
+      mejorIndice = i;
+    }
+  });
+
+  seleccionarIndice(mejorIndice);
+}
+
+let cuadroProgramado = null;
+carrusel.addEventListener('scroll', () => {
+  if (cuadroProgramado) cancelAnimationFrame(cuadroProgramado);
+  cuadroProgramado = requestAnimationFrame(actualizarActiva);
+});
+
 async function comprar() {
-  if (!planSeleccionado || botonComprar.disabled) return;
+  const plan = PLANES[indiceActivo];
+  if (!plan || botonComprar.disabled) return;
   botonComprar.disabled = true;
   botonComprarTexto.innerHTML = '<span class="girador"></span>';
 
@@ -72,7 +128,7 @@ async function comprar() {
     const r = await fetch('/api/comprar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ plan: planSeleccionado.id })
+      body: JSON.stringify({ plan: plan.id })
     });
     const d = await r.json();
     if (d.error) {
@@ -97,9 +153,11 @@ function mostrarError(texto) {
   resumenEtiqueta.style.color = 'var(--rojo)';
   setTimeout(() => {
     resumenEtiqueta.style.color = '';
-    resumenEtiqueta.textContent = planSeleccionado ? planSeleccionado.duracion : 'Selecciona un plan';
+    resumenEtiqueta.textContent = PLANES[indiceActivo].duracion;
   }, 2800);
 }
 
 botonComprar.addEventListener('click', comprar);
-renderizarPlanes();
+renderizarCarrusel();
+seleccionarIndice(0);
+window.addEventListener('resize', () => requestAnimationFrame(actualizarActiva));
