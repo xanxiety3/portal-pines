@@ -70,6 +70,27 @@ function todosLosBotones() {
   return [...gridPlanes.querySelectorAll('.boton-comprar-tarjeta')];
 }
 
+function esperar(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// En portales cautivos (sobre todo en el mini-navegador de iPhone, que no se
+// puede refrescar a mano) la red suele tardar un momento en quedar lista justo
+// al conectarse al WiFi: el primer fetch puede fallar por pura carrera con la
+// red, no porque el servidor esté mal. Reintentamos solos antes de rendirnos.
+async function fetchConReintentos(url, opciones, intentos = 4, esperaMs = 1200) {
+  let ultimoError;
+  for (let intento = 1; intento <= intentos; intento++) {
+    try {
+      return await fetch(url, opciones);
+    } catch (e) {
+      ultimoError = e;
+      if (intento < intentos) await esperar(esperaMs);
+    }
+  }
+  throw ultimoError;
+}
+
 async function comprar(plan, boton) {
   const botones = todosLosBotones();
   if (botones.some(b => b.disabled)) return;
@@ -79,7 +100,7 @@ async function comprar(plan, boton) {
   try { navigator.vibrate && navigator.vibrate(8); } catch (e) {}
 
   try {
-    const r = await fetch('api/comprar', {
+    const r = await fetchConReintentos('api/comprar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ plan: plan.id })
