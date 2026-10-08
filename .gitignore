@@ -1,7 +1,4 @@
 node_modules
 .env
 pedidos.json
-pedidos.db
-pedidos.db-journal
-pedidos.db-wal
-pedidos.db-shm
+pedidos.json.tmp

@@ -15,7 +15,7 @@
     const cuadros = [];
     for (let i = 0; i < CUADROS; i++) {
       const canvas = document.createElement('canvas');
-      canvas.width = TAMANIO;
+      canvas.width = TAMANIO; 
       canvas.height = TAMANIO;
       const ctx = canvas.getContext('2d');
       ctx.translate(TAMANIO / 2, TAMANIO / 2);
