@@ -74,15 +74,38 @@ function esperar(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// Usamos XMLHttpRequest en vez de fetch() para este POST: el mini-navegador
+// cautivo de iOS (Captive Network Assistant) es un WebKit muy restringido
+// donde fetch() puede fallar aunque la red esté bien — XHR es más antiguo
+// y más compatible con ese entorno.
+function peticionJSON(url, datos) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', url, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.timeout = 8000;
+    xhr.onload = () => {
+      try {
+        resolve(JSON.parse(xhr.responseText));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    xhr.onerror = () => reject(new Error('Error de red'));
+    xhr.ontimeout = () => reject(new Error('Tiempo de espera agotado'));
+    xhr.send(JSON.stringify(datos));
+  });
+}
+
 // En portales cautivos (sobre todo en el mini-navegador de iPhone, que no se
 // puede refrescar a mano) la red suele tardar un momento en quedar lista justo
-// al conectarse al WiFi: el primer fetch puede fallar por pura carrera con la
-// red, no porque el servidor esté mal. Reintentamos solos antes de rendirnos.
-async function fetchConReintentos(url, opciones, intentos = 4, esperaMs = 1200) {
+// al conectarse al WiFi: la primera petición puede fallar por pura carrera con
+// la red, no porque el servidor esté mal. Reintentamos solos antes de rendirnos.
+async function peticionConReintentos(url, datos, intentos = 4, esperaMs = 1200) {
   let ultimoError;
   for (let intento = 1; intento <= intentos; intento++) {
     try {
-      return await fetch(url, opciones);
+      return await peticionJSON(url, datos);
     } catch (e) {
       ultimoError = e;
       if (intento < intentos) await esperar(esperaMs);
@@ -100,12 +123,7 @@ async function comprar(plan, boton) {
   try { navigator.vibrate && navigator.vibrate(8); } catch (e) {}
 
   try {
-    const r = await fetchConReintentos('api/comprar', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ plan: plan.id })
-    });
-    const d = await r.json();
+    const d = await peticionConReintentos('api/comprar', { plan: plan.id });
     if (d.error) {
       mostrarToast(d.error);
       botones.forEach(b => { b.disabled = false; });
