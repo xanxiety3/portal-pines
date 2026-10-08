@@ -165,7 +165,9 @@ router.get('/api/estado/:referencia', async (req, res) => {
 
   res.json({ estado: pedido.estado, pin: pedido.pin, qr: pedido.qr, llave: pedido.llave, vence: pedido.vence });
 });
-router.post('/api/comprar', limitadorComprar, async (req, res) => {
+// Desactivado temporalmente mientras están en pruebas (quita "limitadorComprar,"
+// de la línea de abajo para reactivarlo cuando pasen a producción real).
+router.post('/api/comprar', async (req, res) => {
   const plan = PLANES[req.body.plan];
   if (!plan) return res.status(400).json({ error: 'Plan no válido' });
 
