@@ -17,7 +17,7 @@ app.set('trust proxy', 1);
 // (ej. "/zonawifi"); Passenger no recorta ese prefijo de la URL, así que
 // montamos todas las rutas bajo él nosotros mismos. En local esto queda
 // vacío y todo se sirve en "/", como antes.
-const BASE_PATH = process.env.PASSENGER_BASE_URI || '';
+const BASE_PATH = process.env.BASE_PATH || process.env.PASSENGER_BASE_URI || '';
 const router = express.Router();
 
 // Si visitan el prefijo exacto sin la barra final, redirige con ella:
@@ -200,4 +200,4 @@ router.post('/api/comprar', limitadorComprar, async (req, res) => {
 app.use(BASE_PATH || '/', router);
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log('Servidor listo en el puerto ' + PORT));
+app.listen(PORT, () => console.log('Servidor listo en el puerto ' + PORT + ' (BASE_PATH="' + BASE_PATH + '")'));
