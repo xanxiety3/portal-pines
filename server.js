@@ -33,7 +33,21 @@ if (BASE_PATH) {
   });
 }
 
-router.use(helmet());
+// Portal cautivo: el sitio se sirve por HTTP a propósito (el walled garden del
+// router suele andar solo por HTTP). El valor por defecto de helmet agrega
+// "upgrade-insecure-requests", que le dice al navegador que convierta TODAS
+// las peticiones del sitio a HTTPS — incluyendo el fetch/XHR de la compra.
+// Si ese dominio no tiene HTTPS realmente andando ahí, la petición upgradeada
+// nunca llega a ningún lado y el usuario ve "no se pudo conectar" siempre,
+// sin importar la red. Lo quitamos explícitamente.
+router.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      'upgrade-insecure-requests': null
+    }
+  }
+}));
 router.use(express.json({ limit: '10kb' }));
 router.use(express.static('public'));
 
