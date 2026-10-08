@@ -42,7 +42,7 @@ function renderizarPlanes() {
   gridPlanes.innerHTML = PLANES.map((plan, i) => `
     <article class="tarjeta-plan" data-plan="${plan.id}" style="animation-delay:${i * 60}ms"
       role="button" tabindex="0" aria-label="Comprar plan de ${plan.duracion} por ${formateador.format(plan.precio)}">
-      <img class="marca-agua" src="/img/espiral-guajiranet.png" alt="">
+      <img class="marca-agua" src="img/espiral-guajiranet.png" alt="">
       <div class="duracion-grande">${plan.duracion}</div>
       <div class="precio-grande">${formateador.format(plan.precio)}</div>
       <button class="boton-comprar-tarjeta" type="button" tabindex="-1">
@@ -79,7 +79,7 @@ async function comprar(plan, boton) {
   try { navigator.vibrate && navigator.vibrate(8); } catch (e) {}
 
   try {
-    const r = await fetch('/api/comprar', {
+    const r = await fetch('api/comprar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ plan: plan.id })
@@ -93,7 +93,7 @@ async function comprar(plan, boton) {
     }
     boton.querySelector('.texto-boton').textContent = '¡Listo!';
     setTimeout(() => {
-      window.location.href = '/pin.html?ref=' + encodeURIComponent(d.referencia);
+      window.location.href = 'pin.html?ref=' + encodeURIComponent(d.referencia);
     }, 150);
   } catch (e) {
     mostrarToast('No se pudo conectar. Intenta de nuevo.');

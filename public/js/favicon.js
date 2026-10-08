@@ -4,7 +4,7 @@
   if (!link) return;
 
   if (reducido) {
-    link.href = '/img/espiral-guajiranet.png';
+    link.href = 'img/espiral-guajiranet.png';
     return;
   }
 
@@ -30,5 +30,5 @@
       i = (i + 1) % CUADROS;
     }, 70);
   };
-  img.src = '/img/espiral-guajiranet.png';
+  img.src = 'img/espiral-guajiranet.png';
 })();

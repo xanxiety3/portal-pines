@@ -13,11 +13,31 @@ if (faltantes.length) {
 const app = express();
 app.set('trust proxy', 1);
 
-app.use(helmet());
-app.use(express.json({ limit: '10kb' }));
-app.use(express.static('public'));
+// En cPanel/Passenger la app puede quedar montada bajo un subdirectorio
+// (ej. "/zonawifi"); Passenger no recorta ese prefijo de la URL, así que
+// montamos todas las rutas bajo él nosotros mismos. En local esto queda
+// vacío y todo se sirve en "/", como antes.
+const BASE_PATH = process.env.PASSENGER_BASE_URI || '';
+const router = express.Router();
 
-app.get('/salud', (req, res) => res.send('ok'));
+// Si visitan el prefijo exacto sin la barra final, redirige con ella:
+// las rutas relativas del frontend (css/js/img) necesitan esa barra para
+// resolver bien contra el subdirectorio.
+if (BASE_PATH) {
+  app.get(BASE_PATH, (req, res, next) => {
+    // Express ignora la barra final al hacer match, así que este handler
+    // también se dispara para ".../zonawifi/" — ahí dejamos pasar (next)
+    // para que el router sirva el index normalmente.
+    if (req.path === BASE_PATH) return res.redirect(301, BASE_PATH + '/');
+    next();
+  });
+}
+
+router.use(helmet());
+router.use(express.json({ limit: '10kb' }));
+router.use(express.static('public'));
+
+router.get('/salud', (req, res) => res.send('ok'));
 const crypto = require('crypto');
 
 // Límite general para toda la API: 60 solicitudes por minuto por IP.
@@ -27,7 +47,7 @@ const limitadorApi = rateLimit({
   standardHeaders: true,
   legacyHeaders: false
 });
-app.use('/api', limitadorApi);
+router.use('/api', limitadorApi);
 
 // Límite más estricto para crear cobros: evita abuso contra la pasarela de pago.
 const limitadorComprar = rateLimit({
@@ -83,7 +103,7 @@ const enProceso = {};
 // Una referencia siempre tiene la forma pin-<uuid v4>; rechaza cualquier otra cosa antes de tocar la BD.
 const REF_VALIDA = /^pin-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-app.get('/api/estado/:referencia', async (req, res) => {
+router.get('/api/estado/:referencia', async (req, res) => {
   const ref = req.params.referencia;
   if (!REF_VALIDA.test(ref)) return res.status(400).json({ estado: 'no_existe' });
 
@@ -131,7 +151,7 @@ app.get('/api/estado/:referencia', async (req, res) => {
 
   res.json({ estado: pedido.estado, pin: pedido.pin, qr: pedido.qr, llave: pedido.llave, vence: pedido.vence });
 });
-app.post('/api/comprar', limitadorComprar, async (req, res) => {
+router.post('/api/comprar', limitadorComprar, async (req, res) => {
   const plan = PLANES[req.body.plan];
   if (!plan) return res.status(400).json({ error: 'Plan no válido' });
 
@@ -176,6 +196,8 @@ app.post('/api/comprar', limitadorComprar, async (req, res) => {
     res.status(500).json({ error: 'Error del servidor' });
   }
 });
+
+app.use(BASE_PATH || '/', router);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log('Servidor listo en el puerto ' + PORT));

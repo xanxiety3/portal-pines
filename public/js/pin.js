@@ -140,7 +140,7 @@ function renderError({ tono = 'error', titulo, mensaje, mostrarRef = false }) {
     <p class="pin-titulo" style="margin-bottom:6px;">${titulo}</p>
     <p class="mensaje">${mensaje}</p>
     ${mostrarRef ? `<div class="referencia-copiable">${ref}</div>` : ''}
-    <a class="enlace-volver" href="/">Volver a comprar</a>
+    <a class="enlace-volver" href="./">Volver a comprar</a>
   `;
 }
 
@@ -152,7 +152,7 @@ async function consultar() {
   }
 
   try {
-    const r = await fetch('/api/estado/' + encodeURIComponent(ref));
+    const r = await fetch('api/estado/' + encodeURIComponent(ref));
     const d = await r.json();
 
     switch (d.estado) {
